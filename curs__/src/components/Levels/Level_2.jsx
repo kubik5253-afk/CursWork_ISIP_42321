@@ -2,7 +2,6 @@ import Image from "next/image";
 import { useState } from "react";
 import Imege_capcha from "../Images_capcha_2/image_capcha";
 import Imege_capcha_2 from "../Images_capcha_2/image_capcha_2";
-import Imege_capcha_3 from "../Images_capcha_2/image_capcha_3";
 import Imege_capcha_5 from "../Images_capcha_2/image_capcha_5";
 import Imege_capcha_6 from "../Images_capcha_2/image_capcha_6";
 export default function Level_2({ onNext }) {
@@ -16,7 +15,7 @@ export default function Level_2({ onNext }) {
     setTimeout(() => {
       setIsRotating(false);
     }, 500);
-    setImagesCupcha(prev => ((prev % 5) + 1));
+    setImagesCupcha(prev => ((prev % 4) + 1));
   };
 
   const handleCheck_1 = () => {
@@ -34,11 +33,10 @@ export default function Level_2({ onNext }) {
         return <Imege_capcha />;
       case 2:
         return <Imege_capcha_2 />;
+
       case 3:
-        return <Imege_capcha_3 />;
-      case 4:
         return <Imege_capcha_6 />;
-      case 5:
+      case 4:
         return <Imege_capcha_5 />;
       default:
         return <div>Уровень не загрузился</div>;

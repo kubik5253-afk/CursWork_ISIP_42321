@@ -1,147 +1,130 @@
-import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
-// Функция для генерации случайной разметки (не гарантирует решаемость)
-// Генерирует гарантированно решаемую комбинацию путём случайных ходов из собранного состояния
-function generateInitialGrid() {
-  // Начальное собранное состояние: [0, 1, 2, 3, 4, 5, 6, 7, null]
-  // null — пустая клетка, индексы 0-8 соответствуют позициям в сетке 3x3
-  let grid = [0, 1, 2, 3, 4, 5, 6, 7, null];
-  
-  let emptyIndex = 8; // Пустая клетка изначально в конце (индекс 8)
-  let previousIndex = -1; // Чтобы избегать немедленных возвратных ходов
+export default function Level_9({ onNext }) {
+  const [selectedCell, setSelectedCell] = useState(null);
+  const [color, setColor] = useState("#fff");
+  const [activClick, setActivClick] = useState(false);
+  const [userSequence, setUserSequence] = useState([]);
+  const timeoutRef = useRef(null);
 
-  // Делаем достаточное количество случайных легальных ходов для хорошего перемешивания
-  // 100-200 ходов обычно достаточно для 3x3 пазла
-  const shuffleSteps = 150;
+  // Генерация уникальной последовательности для текущего уровня
+  const [correctSequence, setCorrectSequence] = useState(() => {
+    const indices = [...Array(25).keys()].sort(() => Math.random() - 0.5);
+    return indices.slice(0, 3); // 3 уникальных индекса для уровня 3
+  });
 
-  for (let step = 0; step < shuffleSteps; step++) {
-    const row = Math.floor(emptyIndex / 3);
-    const col = emptyIndex % 3;
-    const possibleMoves = [];
+  const [levelNumber, setLevelNumber] = useState(3); // Начальный уровень
 
-    // Собираем все возможные ходы (соседние клетки по вертикали и горизонтали)
-    if (row > 0) possibleMoves.push(emptyIndex - 3); // Вверх
-    if (row < 2) possibleMoves.push(emptyIndex + 3); // Вниз
-    if (col > 0) possibleMoves.push(emptyIndex - 1); // Влево
-    if (col < 2) possibleMoves.push(emptyIndex + 1); // Вправо
-
-    // Исключаем обратный ход, чтобы перемешивание было эффективнее
-    const validMoves = possibleMoves.filter(idx => idx !== previousIndex);
-    
-    // Если все ходы отфильтровались (крайний случай), берём любой возможный
-    const moveCandidates = validMoves.length > 0 ? validMoves : possibleMoves;
-    
-    // Выбираем случайный ход из доступных
-    const randomMove = moveCandidates[Math.floor(Math.random() * moveCandidates.length)];
-    
-    // Меняем местами пустую клетку и выбранную плитку
-    [grid[emptyIndex], grid[randomMove]] = [grid[randomMove], grid[emptyIndex]];
-    
-    // Обновляем позиции для следующей итерации
-    previousIndex = emptyIndex;
-    emptyIndex = randomMove;
-  }
-
-  return grid;
-}
-
-export default function Level_12({ onNext }) {
-  const [isRotating, setIsRotating] = useState(true); // Анимация сработает 1 раз
-  const [grid, setGrid] = useState(generateInitialGrid());
-
-  const images_1 = [
-    "/Stop/stop1.jpg",
-    "/Stop/stop2.jpg",
-    "/Stop/stop3.jpg",
-    "/Stop/stop4.jpg",
-    "/Stop/stop5.jpg",
-    "/Stop/stop6.jpg",
-    "/Stop/stop7.jpg",
-    "/Stop/stop8.jpg",
+  const colors = [
+    "#ff5733", "#33ff57", "#3357ff", "#ff33a1", "#a133ff",
+    "#33fff5", "#f5ff33", "#ff8c33", "#8c33ff", "#33ff8c",
+    "#ff3333", "#33ff33", "#3333ff", "#ffff33", "#ff33ff",
+    "#33ffff", "#ff9933", "#9933ff", "#33ff99", "#99ff33",
+    "#ff3399", "#3399ff", "#99ff33", "#ff6633", "#6633ff"
   ];
-  const solvedGrid = [0, 1, 2, 3, 4, 5, 6, 7, null]; 
-  const handleCheck_1 = () => {
 
-    if (grid.toString() === solvedGrid.toString()) {
-      onNext();
-    } else {
-      alert('не собран')
-    }
-  };
-  console.log(grid.toString())
-  console.log(solvedGrid.toString())
-  // Анимация 
+  // Отображение последовательности при старте уровня
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsRotating(false);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, []);
+    const timeouts = [];
 
-  const handleResetClick = () => {
-    // Анимация сброса отключена
-    setGrid(generateInitialGrid());
-  };
+    correctSequence.forEach((cell, index) => {
+      timeouts.push(
+        setTimeout(() => {
+          setSelectedCell(cell);
+          setColor(colors[cell]);
+        }, (index + 1) * 1000)
+      );
+    });
 
-  const handleClick = (index) => {
-    const emptyIndex = grid.indexOf(null);
-    const row = Math.floor(index / 3);
-    const col = index % 3;
-    const emptyRow = Math.floor(emptyIndex / 3);
-    const emptyCol = emptyIndex % 3;
+    timeouts.push(
+      setTimeout(() => {
+        setSelectedCell(null);
+        setActivClick(true);
+      }, (correctSequence.length + 1) * 1000)
+    );
 
-    if (
-      (row === emptyRow && Math.abs(col - emptyCol) === 1) ||
-      (col === emptyCol && Math.abs(row - emptyRow) === 1)
-    ) {
-      const newGrid = [...grid];
-      [newGrid[index], newGrid[emptyIndex]] = [newGrid[emptyIndex], newGrid[index]];
-      setGrid(newGrid);
+    return () => {
+      timeouts.forEach(clearTimeout);
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, [correctSequence]);
+
+  // Обработка кликов по ячейкам
+  const colorClick = (i) => {
+    if (activClick) {
+      const newSequence = [...userSequence, i];
+      setUserSequence(newSequence);
+      setSelectedCell(i);
+      setColor(colors[i]);
+
+      const isCorrectUpToNow = newSequence.every((val, index) => val === correctSequence[index]);
+
+      if (!isCorrectUpToNow) {
+        // Ошибка: сброс уровня к начальному состоянию
+        setColor("red");
+        timeoutRef.current = setTimeout(() => {
+          setSelectedCell(null);
+          setColor("#fff");
+          setUserSequence([]);
+          
+          // Генерация новой начальной последовательности
+          const indices = [...Array(25).keys()].sort(() => Math.random() - 0.5);
+          const newInitialSequence = indices.slice(0, 3);
+          setCorrectSequence(newInitialSequence);
+          setLevelNumber(3); // Сброс уровня
+          setActivClick(false);
+        }, 500);
+      } else if (newSequence.length === correctSequence.length) {
+        // Уровень пройден
+        timeoutRef.current = setTimeout(() => {
+          setSelectedCell(null);
+          setColor("#fff");
+
+          if (levelNumber < 6) {
+            // Генерация новой последовательности для следующего уровня
+            const indices = [...Array(25).keys()].sort(() => Math.random() - 0.5);
+            const newSequence = indices.slice(0, levelNumber + 1);
+            setCorrectSequence(newSequence);
+            setLevelNumber(levelNumber + 1);
+            setUserSequence([]);
+            setActivClick(false);
+          } else {
+            onNext(); // Завершение игры
+          }
+        }, 500);
+      } else {
+        // Промежуточная проверка
+        timeoutRef.current = setTimeout(() => {
+          setSelectedCell(null);
+          setColor("#fff");
+        }, 500);
+      }
     }
   };
 
   return (
     <>
-      <div className="border-1 border-gray-300 mx-auto w-115 h-151 shadow-2xl mt-5">
-        <div className="bg-[#488ddd] m-1.5 pl-3 pt-1 h-18 text-neutral-50">
-          <p>Текст</p>
-          <h3 className="font-bold text-2xl">Текст</h3>
+      <div className="border-1 rounded-2xl bg-[#1a1a1a] border-gray-300 mx-auto w-115 h-151 shadow-2xl mt-5">
+        <div className="bg-[#2a2a2a] m-3 pl-3 pt-1 h-18 text-neutral-50">
+          <p>Симон</p>
+          <h3 className="font-bold text-2xl">Уровень {levelNumber}</h3>
         </div>
 
-        <div className="grid grid-cols-3 p-1 gap-1 h-110">
-          {grid.map((tile, index) => (
+        <div className="ml-6 mr-5 my-1.5 h-105 w-105 grid grid-cols-5 grid-rows-5">
+          {[...Array(25)].map((_, i) => (
             <div
-              key={index}
-              className={`w-36 h-36 border border-gray-300 flex items-center justify-center cursor-pointer 
-                transition-transform duration-300 ease-in-out
-                ${tile === null ? 'bg-gray-200' : ''}`}
-              onClick={() => handleClick(index)}
-            >
-              {tile !== null && (
-                <Image
-                  src={images_1[tile]}
-                  alt={`Tile ${tile}`}
-                  width={144}
-                  height={144}
-                  className="object-cover rounded-md shadow-sm"
-                />
-              )}
-            </div>
+              key={i}
+              className={`bg-[#3e3e3e] h-19 w-19 gap-1 rounded-sm ${activClick ? "hover:bg-[#6c6c6c]" : ""}`}
+              style={{ backgroundColor: selectedCell === i ? color : "" }}
+              onClick={() => colorClick(i)}
+            />
           ))}
         </div>
-        <div className="border-t-1 mx-1.5 my-1 p-1 h-16 flex justify-between items-center">
-          <Image 
-            className={`ml-2 ${isRotating ? 'animate-spin' : ''}`}
-            src="/reset.png"
-            alt="Сбросить выбор"
-            width={20}
-            height={20} 
-            onClick={handleResetClick}
-          />
-          <button 
-            className="h-10 w-25 bg-[#488ddd] text-neutral-50"
-            onClick={handleCheck_1}
+
+        <div className="border-b-neutral-200 bg-[#222222] mx-1.5 p-1 h-16 flex flex-row-reverse items-center">
+          <button
+            className="h-10 w-25 bg-[#333333] rounded-xl text-neutral-50"
+            onClick={() => {}}
           >
             Проверить
           </button>

@@ -3,8 +3,10 @@ import { useState, useEffect } from "react";
 
 export default function Header({ currentLevel }) { 
 const [Text_Level, setText_Level] = useState('Checkbox')
+console.log(Text_Level)
   useEffect(() => {
-    switch(currentLevel){
+    const level = Number(currentLevel); 
+    switch(level){
       case 1:
         setText_Level('Checkbox');
         break;
@@ -16,6 +18,30 @@ const [Text_Level, setText_Level] = useState('Checkbox')
         break;
       case 4:
         setText_Level('крестики нолики');
+        break;
+      case 5:
+        setText_Level('знак');
+        break;
+      case 6:
+        setText_Level('круг');
+        break;
+      case 7:
+        setText_Level('цвет');
+        break;
+      case 8:
+        setText_Level('парковка');
+        break;
+      case 9:
+        setText_Level('Трейд');
+        break;
+      case 10:
+        setText_Level('Эмпайр-стейт-билдинг');
+        break;
+      case 11:
+        setText_Level('пятнашки');
+        break;
+      case 12:
+        setText_Level('Симон');
         break;
       default:
         setText_Level('');

@@ -14,7 +14,7 @@ import Level_9 from '@/components/Levels/Level_9';
 import Level_10 from '@/components/Levels/Level_10';
 import Level_11 from '@/components/Levels/Level_11';
 import Level_12 from '@/components/Levels/Level_12';
-import Level_13 from '@/components/Levels/Level_13';
+
 
 export default function Page() {
   const [currentLevel, setCurrentLevel] = useState(1);
@@ -60,8 +60,7 @@ export default function Page() {
         return <Level_11 onNext={handleNextLevel}/>;
       case 12:
         return <Level_12 onNext={handleNextLevel}/>;
-      case 13:
-        return <Level_13 onNext={handleNextLevel}/>;
+
       default:
         return <div>Уровень не найден</div>;
     }
