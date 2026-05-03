@@ -42,7 +42,7 @@ console.log(selected)
         </div>
 
         {/* Сетка 10x10 с фоном car.png и прозрачными ячейками */}
-        <div className="grid grid-cols-10 h-396 w-110 mx-2 bg-[url('/empaer.png')] bg-cover bg-center">
+        <div className="grid grid-cols-10 h-396 w-110 mx-2 bg-[url('/empaer.jpg')] bg-cover bg-center">
           {[...Array(360)].map((_, i) => (
             <div 
               key={i} 
